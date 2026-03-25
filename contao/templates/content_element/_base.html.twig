@@ -1,0 +1,16 @@
+{#
+    Extends the Contao core base content element template to inject
+    custom data-* attributes stored via the keyValueWizard DCA field.
+
+    Attributes are merged using the "set and merge" pattern so that any
+    other template in the hierarchy that also adjusts `attributes` (e.g.
+    to add a CSS ID or class) will compose correctly with our changes.
+#}
+{% extends "@Contao/content_element/_base.html.twig" %}
+
+{% if data.customDataAttributes %}
+    {% set attributes = attrs()
+        .mergeWith(data.customDataAttributes|data_attributes)
+        .mergeWith(attributes|default)
+    %}
+{% endif %}
