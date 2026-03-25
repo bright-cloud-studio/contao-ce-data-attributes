@@ -1,23 +1,22 @@
 <?php
 
-// contao/dca/tl_content.php
-
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
 
-PaletteManipulator::create()
-    ->addField('my_custom_field', 'text', PaletteManipulator::POSITION_AFTER)
-    ->applyToPalette('text', 'tl_content');
-
-$GLOBALS['TL_DCA']['tl_content']['fields']['my_custom_field'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_content']['my_custom_field'],
-    'inputType' => 'text',
+$GLOBALS['TL_DCA']['tl_content']['fields']['customDataAttributes'] = [
+    'exclude'   => true,
+    'inputType' => 'keyValueWizard',
     'eval'      => [
-        'maxlength' => 255,
-        'tl_class'  => 'w50',
+        'tl_class' => 'clr',
     ],
-    'sql'       => [
-        'type'    => 'string',
-        'length'  => 255,
-        'default' => '',
-    ],
+    'sql' => 'text NULL',
 ];
+
+// Apply to whichever content element palettes you need
+$palettes = ['text', 'html', 'image', 'list', 'table', 'accordionStart'];
+
+foreach ($palettes as $palette) {
+    PaletteManipulator::create()
+        ->addLegend('data_attributes_legend', 'expert_legend', PaletteManipulator::POSITION_AFTER, true)
+        ->addField('customDataAttributes', 'data_attributes_legend', PaletteManipulator::POSITION_APPEND)
+        ->applyToPalette($palette, 'tl_content');
+}
