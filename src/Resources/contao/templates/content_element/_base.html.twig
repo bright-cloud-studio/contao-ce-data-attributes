@@ -6,7 +6,7 @@
     other template in the hierarchy that also adjusts `attributes` (e.g.
     to add a CSS ID or class) will compose correctly with our changes.
 #}
-{% extends "@Contao/content_element/_base.html.twig" %}
+{% extends "@Contao_ContaoCoreBundle/content_element/_base.html.twig" %
 
 {% if data.customDataAttributes %}
     {% set attributes = attrs()
