@@ -1,0 +1,41 @@
+{
+    "name":"bright-cloud-studio/contao-ce-data-attributes",
+    "description":"Allows adding data attributes to content elements",
+    "keywords": ["contao", "content", "element", "data", "attribute", "bright", "cloud", "studio"],
+    "type": "contao-bundle",
+    "homepage": "https://brightcloudstudio.com/",
+    "license": "LGPL-3.0-or-later",
+    "authors":[
+        {
+            "name": "Bright Cloud Studio",
+            "homepage": "https://brightcloudstudio.com",
+            "email": "mark@brightcloudstudio.com",
+            "role": "Developer"
+        }
+    ],
+    "support":{
+        "issues": "https://github.com/bright-cloud-studio/contao-ce-data-attributes/issues",
+        "source": "https://github.com/bright-cloud-studio/contao-ce-data-attributes"
+    },
+    "require":{
+        "php": "^7.4 || ^8.0",
+        "contao/core-bundle": "^4.13 || ^5.3"
+    },
+    "extra":{
+        "contao-manager-plugin": "Bcs\\DataAttributesBundle\\ContaoManager\\Plugin"
+    },
+    "autoload": {
+        "psr-4": {
+            "Bcs\\DataAttributesBundle\\": "src"
+        },
+        "classmap": [
+            "src/Resources/contao"
+        ],
+        "exclude-from-classmap": [
+            "src/Resources/contao/config/",
+            "src/Resources/contao/dca/",
+            "src/Resources/contao/languages/",
+            "src/Resources/contao/templates/"
+        ]
+    }
+}
