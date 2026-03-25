@@ -16,6 +16,17 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class BcsDataAttributesBundle extends Bundle
 {
+    /**
+     * Override getPath() to return the bundle root (parent of src/).
+     * This tells Contao to look for resources in contao/dca/,
+     * contao/languages/, and contao/templates/ at the bundle root,
+     * which correctly preserves subdirectory structure for Twig templates.
+     */
+    public function getPath(): string
+    {
+        return \dirname(__DIR__);
+    }
+
     public function getContainerExtension(): ?ExtensionInterface
     {
         return new BcsDataAttributesExtension();
