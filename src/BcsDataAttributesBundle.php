@@ -10,7 +10,6 @@
 
 namespace Bcs\DataAttributesBundle;
 
-use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class BcsDataAttributesBundle extends Bundle
