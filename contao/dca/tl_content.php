@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
-use Contao\DataContainer;
 use Contao\Database;
 
 $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
@@ -20,10 +19,10 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
                     $options = [];
 
                     $result = Database::getInstance()
-                        ->execute("SELECT id, name FROM tl_data_attribute WHERE published=1 ORDER BY name");
+                        ->execute("SELECT id, label, attribute_name FROM tl_data_attribute WHERE published='1' ORDER BY label ASC");
 
                     while ($result->next()) {
-                        $options[$result->id] = $result->name . ' [ID ' . $result->id . ']';
+                        $options[$result->id] = sprintf('%s [data-%s]', $result->label, $result->attribute_name);
                     }
 
                     return $options;
@@ -32,7 +31,6 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
                     'includeBlankOption' => true,
                     'chosen' => true,
                     'style' => 'width:300px',
-                    'mandatory' => false,
                 ],
             ],
             'value' => [
@@ -42,7 +40,6 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
                     'maxlength' => 255,
                     'style' => 'width:300px',
                     'decodeEntities' => true,
-                    'mandatory' => false,
                 ],
             ],
         ],
