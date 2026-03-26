@@ -8,9 +8,12 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     'inputType' => 'dataAttributeWizard',
     'eval'      => [
         'tl_class' => 'clr',
-        'multiple'     => true, // THIS tells Contao the field contains a collection/array
-        'columnFields' => [ // If this is a KeyValue style wizard, it needs columns
-            'key' => [
+        // 1. REMOVE 'multiple' => true. 
+        // In this specific widget context, it's forcing the early array conversion.
+        
+        'columnFields' => [
+            // 2. FIX THE KEYS to match your actual DB data 
+            'attribute_id' => [ 
                 'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_key'],
                 'inputType' => 'text',
                 'eval' => ['style'=>'width:40%', 'nospace'=>true]
@@ -22,7 +25,8 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
             ]
         ]
     ],
-    // THIS IS THE KEY:
+    // 3. ADD THIS LINE:
+    'serialize' => true, 
     'sql'       => "blob NULL", 
 ];
 
