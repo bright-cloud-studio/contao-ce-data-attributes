@@ -6,8 +6,11 @@ use Contao\CoreBundle\DataContainer\PaletteManipulator;
 $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     'label'     => &$GLOBALS['TL_LANG']['tl_content']['ce_data_attributes'],
     'inputType' => 'dataAttributeWizard',
-    'eval'      => ['tl_class' => 'clr'],
-    'sql'       => 'blob NULL',
+    'eval'      => [
+        'tl_class' => 'clr',
+        'flatten-array' => true // This tells Contao to handle the array conversion
+    ],
+    'sql'       => "blob NULL", 
 ];
 
 // Inject a new legend + field into the 'text' palette only
