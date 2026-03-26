@@ -1,43 +1,62 @@
 <?php
 
-use Contao\CoreBundle\DataContainer\PaletteManipulator;
+declare(strict_types=1);
 
-// Add the new field definition
+use Contao\CoreBundle\DataContainer\PaletteManipulator;
+use Contao\DataContainer;
+use Contao\Database;
+
 $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
-    'label'     => &$GLOBALS['TL_LANG']['tl_content']['ce_data_attributes'],
-    'inputType' => 'dataAttributeWizard',
-    'eval'      => [
+    'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_attributes'],
+    'exclude' => true,
+    'inputType' => 'rowWizard',
+    'eval' => [
         'tl_class' => 'clr',
-        'csv' => false,
-        'decodeEntities' => true, // Crucial for JSON storage
         'columnFields' => [
-            'attribute_id' => [ 
+            'attribute_id' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_key'],
-                'inputType' => 'text',
+                'inputType' => 'select',
+                'options_callback' => static function () {
+                    $options = [];
+
+                    $result = Database::getInstance()
+                        ->execute("SELECT id, name FROM tl_data_attribute WHERE published=1 ORDER BY name");
+
+                    while ($result->next()) {
+                        $options[$result->id] = $result->name . ' [ID ' . $result->id . ']';
+                    }
+
+                    return $options;
+                },
                 'eval' => [
-                    'style'   => 'width:40%', 
-                    'nospace' => true, 
-                    'rgxp' => 'custom',
-                    'customRgxp' => '/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-                    'maxlength' => 64,
-                    'lowercase' => true,
-                ]
+                    'includeBlankOption' => true,
+                    'chosen' => true,
+                    'style' => 'width:300px',
+                    'mandatory' => false,
+                ],
             ],
             'value' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_value'],
                 'inputType' => 'text',
                 'eval' => [
-                    'style' => 'width:50%',
                     'maxlength' => 255,
+                    'style' => 'width:300px',
+                    'decodeEntities' => true,
+                    'mandatory' => false,
                 ],
-            ]
-        ]
+            ],
+        ],
     ],
-    'sql' => ['type' => 'json', 'notnull' => false]
+    'save_callback' => [
+        [[\App\Contao\Dca\ContentDataAttributesCallback::class, 'validateAndNormalize']],
+    ],
+    'sql' => [
+        'type' => 'blob',
+        'notnull' => false,
+    ],
 ];
 
-// Inject a new legend + field into the 'text' palette only
 PaletteManipulator::create()
-    ->addLegend('data_attributes_legend', 'expert_legend', PaletteManipulator::POSITION_BEFORE, true)
+    ->addLegend('data_attributes_legend', 'expert_legend', PaletteManipulator::POSITION_BEFORE)
     ->addField('ce_data_attributes', 'data_attributes_legend', PaletteManipulator::POSITION_APPEND)
     ->applyToPalette('text', 'tl_content');
