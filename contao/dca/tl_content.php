@@ -7,8 +7,8 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     'label'     => &$GLOBALS['TL_LANG']['tl_content']['ce_data_attributes'],
     'inputType' => 'dataAttributeWizard',
     'eval'      => [
-        'tl_class' => 'clr',
-        'flatten-array' => true // This tells Contao to handle the array conversion
+        'tl_class'       => 'clr',
+        'decodeEntities' => true, // Add this to ensure proper data handling
     ],
     'sql'       => "blob NULL", 
 ];
