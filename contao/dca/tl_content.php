@@ -17,14 +17,19 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
                 'eval' => [
                     'style'   => 'width:40%', 
                     'nospace' => true, 
-                    'rgxp'    => 'alphanumeric',
-                    'lowercase' => true
+                    'rgxp' => 'custom',
+                    'customRgxp' => '/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                    'maxlength' => 64,
+                    'lowercase' => true,
                 ]
             ],
             'value' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_value'],
                 'inputType' => 'text',
-                'eval' => ['style'=>'width:50%']
+                'eval' => [
+                    'style' => 'width:50%',
+                    'maxlength' => 255,
+                ],
             ]
         ]
     ],
