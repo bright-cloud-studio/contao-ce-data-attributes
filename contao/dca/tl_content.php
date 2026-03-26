@@ -8,6 +8,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     'inputType' => 'dataAttributeWizard',
     'eval'      => [
         'tl_class' => 'clr',
+        'decodeEntities' => true, // Crucial for JSON storage
         'columnFields' => [
             'attribute_id' => [ 
                 'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_key'],
@@ -26,7 +27,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
             ]
         ]
     ],
-    'sql'       => "json NULL"
+    'sql' => ['type' => 'blob', 'notnull' => false] // Recommended for better compatibility
 ];
 
 // Inject a new legend + field into the 'text' palette only
