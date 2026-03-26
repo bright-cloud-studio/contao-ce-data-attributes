@@ -10,7 +10,6 @@
 
 namespace Bcs\DataAttributesBundle;
 
-use Bcs\DataAttributesBundle\DependencyInjection\BcsDataAttributesExtension;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -25,10 +24,5 @@ class BcsDataAttributesBundle extends Bundle
     public function getPath(): string
     {
         return \dirname(__DIR__);
-    }
-
-    public function getContainerExtension(): ?ExtensionInterface
-    {
-        return new BcsDataAttributesExtension();
     }
 }
