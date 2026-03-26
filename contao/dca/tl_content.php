@@ -28,7 +28,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
             ]
         ]
     ],
-    'sql' => ['type' => 'json']
+    'sql' => ['type' => 'json', 'notnull' => false]
 ];
 
 // Inject a new legend + field into the 'text' palette only
