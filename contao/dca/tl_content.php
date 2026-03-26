@@ -9,7 +9,6 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_attributes'],
     'exclude' => true,
     'inputType' => 'rowWizard',
-
     'fields' => [
         'attribute_id' => [
             'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_key'],
@@ -40,13 +39,11 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
             ],
         ],
     ],
-
     'eval' => [
         'tl_class' => 'clr',
     ],
-
     'save_callback' => [
-        [[\Bcs\DataAttributesBundle\Dca\ContentDataAttributesCallback::class, 'validateAndNormalize']],
+        [\Bcs\DataAttributesBundle\Dca\ContentDataAttributesCallback::class, 'validateAndNormalize'],
     ],
     'sql' => [
         'type' => 'blob',
