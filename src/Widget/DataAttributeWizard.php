@@ -81,11 +81,15 @@ class DataAttributeWizard extends Widget
     {
         $attributes    = $this->loadAttributes();
         $currentValues = [];
-
+    
+        // FIX: Check if it's already an array (Contao 5) or needs unserializing (Legacy)
         if ($this->varValue) {
-            $currentValues = unserialize($this->varValue) ?: [];
+            if (is_array($this->varValue)) {
+                $currentValues = $this->varValue;
+            } else {
+                $currentValues = unserialize($this->varValue) ?: [];
+            }
         }
-
         // Always show at least one empty row
         if (empty($currentValues)) {
             $currentValues = [['attribute_id' => '', 'value' => '']];
@@ -241,17 +245,17 @@ JS;
     public function validate(): void
     {
         $submitted = $this->getPost($this->strName);
-
+    
         if (!is_array($submitted)) {
-            $this->varValue = '';
+            $this->varValue = null; // Use null for empty values in C5
             return;
         }
-
-        // Strip rows with no attribute selected
+    
         $rows = array_values(
             array_filter($submitted, static fn($row) => !empty($row['attribute_id']))
         );
-
-        $this->varValue = !empty($rows) ? serialize($rows) : '';
+    
+        // FIX: Just store the array. Do NOT call serialize().
+        $this->varValue = !empty($rows) ? $rows : null;
     }
 }
