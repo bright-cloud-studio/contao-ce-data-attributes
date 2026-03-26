@@ -1,4 +1,0 @@
-services:
-    Bcs\DataAttributesBundle\Twig\Extension\DataAttributesExtension:
-        tags:
-            - { name: twig.extension }
