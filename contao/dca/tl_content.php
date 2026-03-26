@@ -8,6 +8,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     'inputType' => 'dataAttributeWizard',
     'eval'      => [
         'tl_class' => 'clr',
+        'multiple'     => true, // THIS tells Contao the field contains a collection/array
         'columnFields' => [ // If this is a KeyValue style wizard, it needs columns
             'key' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_key'],
