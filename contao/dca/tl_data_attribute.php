@@ -60,10 +60,9 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
             ),
             'toggle' => array
             (
-                'label'               => &$GLOBALS['TL_LANG']['tl_data_attribute']['toggle'],
-                'icon'                => 'visible.gif',
-                'attributes'          => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
-                'button_callback'     => array('Bcs\Backend\DataAttributeBackend', 'toggleIcon')
+                'href'                => 'act=toggle&field=published',
+                'icon'                => 'visible.svg',
+                'toggleField'         => 'published',
             ),
             'show' => array
             (
