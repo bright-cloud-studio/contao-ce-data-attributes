@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Bcs\DataAttributesBundle\Dca;
 
-use Contao\CoreBundle\Exception\ResponseException;
 use Contao\Database;
-use Contao\Message;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class ContentDataAttributesCallback
 {
@@ -18,7 +15,7 @@ class ContentDataAttributesCallback
         }
 
         $attributeRows = Database::getInstance()
-            ->execute("SELECT id, name, value_type, allowed_values, is_required FROM tl_data_attribute WHERE published=1")
+            ->execute("SELECT id, label, value_type, allowed_values, default_value, published FROM tl_data_attribute WHERE published='1'")
             ->fetchAllAssoc();
 
         $attributes = [];
@@ -27,7 +24,7 @@ class ContentDataAttributesCallback
             $allowedValues = [];
 
             if (!empty($row['allowed_values'])) {
-                $decoded = json_decode((string) $row['allowed_values'], true);
+                $decoded = @unserialize($row['allowed_values']);
 
                 if (\is_array($decoded)) {
                     $allowedValues = $decoded;
@@ -36,10 +33,10 @@ class ContentDataAttributesCallback
 
             $attributes[(int) $row['id']] = [
                 'id' => (int) $row['id'],
-                'name' => (string) $row['name'],
+                'label' => (string) $row['label'],
                 'value_type' => (string) $row['value_type'],
                 'allowed_values' => $allowedValues,
-                'is_required' => (bool) $row['is_required'],
+                'default_value' => (string) ($row['default_value'] ?? ''),
             ];
         }
 
@@ -48,7 +45,7 @@ class ContentDataAttributesCallback
 
         foreach ($value as $index => $row) {
             $attributeId = isset($row['attribute_id']) ? (int) $row['attribute_id'] : 0;
-            $rawValue = isset($row['value']) ? trim((string) $row['value']) : '';
+            $rawValue = trim((string) ($row['value'] ?? ''));
 
             if (0 === $attributeId && '' === $rawValue) {
                 continue;
@@ -61,12 +58,12 @@ class ContentDataAttributesCallback
             if (isset($usedAttributeIds[$attributeId])) {
                 throw new \RuntimeException(sprintf(
                     'The attribute "%s" has been selected more than once.',
-                    $attributes[$attributeId]['name']
+                    $attributes[$attributeId]['label']
                 ));
             }
 
             $definition = $attributes[$attributeId];
-            $normalizedValue = $this->normalizeValue($rawValue, $definition, $index);
+            $normalizedValue = $this->normalizeValue($rawValue, $definition);
 
             $usedAttributeIds[$attributeId] = true;
 
@@ -79,16 +76,11 @@ class ContentDataAttributesCallback
         return $normalized;
     }
 
-    private function normalizeValue(string $rawValue, array $definition, int $index): string
+    private function normalizeValue(string $rawValue, array $definition): string
     {
-        $label = $definition['name'] ?? ('Row '.($index + 1));
-        $type = $definition['value_type'] ?? 'text';
-        $required = (bool) ($definition['is_required'] ?? false);
+        $label = $definition['label'] ?? 'Attribute';
+        $type = $definition['value_type'] ?? 'freetext';
         $allowedValues = $definition['allowed_values'] ?? [];
-
-        if ($required && '' === $rawValue) {
-            throw new \RuntimeException(sprintf('The attribute "%s" requires a value.', $label));
-        }
 
         if ('' === $rawValue) {
             return '';
@@ -122,8 +114,7 @@ class ContentDataAttributesCallback
 
                 return $rawValue;
 
-            case 'textarea':
-            case 'text':
+            case 'freetext':
             default:
                 return $rawValue;
         }
