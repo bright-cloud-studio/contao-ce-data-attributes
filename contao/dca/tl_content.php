@@ -8,6 +8,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     'inputType' => 'dataAttributeWizard',
     'eval'      => [
         'tl_class' => 'clr',
+        'csv' => false,
         'decodeEntities' => true, // Crucial for JSON storage
         'columnFields' => [
             'attribute_id' => [ 
