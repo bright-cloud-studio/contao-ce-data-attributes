@@ -8,15 +8,16 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     'inputType' => 'dataAttributeWizard',
     'eval'      => [
         'tl_class' => 'clr',
-        // 1. REMOVE 'multiple' => true. 
-        // In this specific widget context, it's forcing the early array conversion.
-        
         'columnFields' => [
-            // 2. FIX THE KEYS to match your actual DB data 
             'attribute_id' => [ 
                 'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_key'],
                 'inputType' => 'text',
-                'eval' => ['style'=>'width:40%', 'nospace'=>true]
+                'eval' => [
+                    'style'   => 'width:40%', 
+                    'nospace' => true, 
+                    'rgxp'    => 'alphanumeric',
+                    'lowercase' => true
+                ]
             ],
             'value' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_value'],
@@ -25,9 +26,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
             ]
         ]
     ],
-    // 3. ADD THIS LINE:
-    'serialize' => true, 
-    'sql'       => "blob NULL", 
+    'sql'       => "json NULL"
 ];
 
 // Inject a new legend + field into the 'text' palette only
