@@ -4,14 +4,22 @@ declare(strict_types=1);
 
 namespace Bcs\DataAttributesBundle\Dca;
 
+use Contao\DataContainer;
 use Contao\Database;
+use Contao\StringUtil;
 
 class ContentDataAttributesCallback
 {
-    public function validateAndNormalize(mixed $value): array
+    public function validateAndNormalize(mixed $value, ?DataContainer $dc = null): string
     {
-        if (!\is_array($value)) {
-            return [];
+        if ('' === $value || null === $value) {
+            return '';
+        }
+
+        $rows = StringUtil::deserialize($value, true);
+
+        if (!\is_array($rows) || [] === $rows) {
+            return '';
         }
 
         $attributeRows = Database::getInstance()
@@ -21,21 +29,13 @@ class ContentDataAttributesCallback
         $attributes = [];
 
         foreach ($attributeRows as $row) {
-            $allowedValues = [];
-
-            if (!empty($row['allowed_values'])) {
-                $decoded = @unserialize($row['allowed_values']);
-
-                if (\is_array($decoded)) {
-                    $allowedValues = $decoded;
-                }
-            }
+            $allowedValues = StringUtil::deserialize($row['allowed_values'] ?? null, true);
 
             $attributes[(int) $row['id']] = [
                 'id' => (int) $row['id'],
                 'label' => (string) $row['label'],
                 'value_type' => (string) $row['value_type'],
-                'allowed_values' => $allowedValues,
+                'allowed_values' => \is_array($allowedValues) ? $allowedValues : [],
                 'default_value' => (string) ($row['default_value'] ?? ''),
             ];
         }
@@ -43,7 +43,11 @@ class ContentDataAttributesCallback
         $normalized = [];
         $usedAttributeIds = [];
 
-        foreach ($value as $index => $row) {
+        foreach ($rows as $index => $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+
             $attributeId = isset($row['attribute_id']) ? (int) $row['attribute_id'] : 0;
             $rawValue = trim((string) ($row['value'] ?? ''));
 
@@ -73,7 +77,11 @@ class ContentDataAttributesCallback
             ];
         }
 
-        return $normalized;
+        if ([] === $normalized) {
+            return '';
+        }
+
+        return serialize($normalized);
     }
 
     private function normalizeValue(string $rawValue, array $definition): string
