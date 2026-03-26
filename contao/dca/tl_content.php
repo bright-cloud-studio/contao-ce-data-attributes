@@ -48,7 +48,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
         ],
     ],
     'save_callback' => [
-        [[\App\Contao\Dca\ContentDataAttributesCallback::class, 'validateAndNormalize']],
+        [[\Bcs\DataAttributesBundle\Dca\ContentDataAttributesCallback::class, 'validateAndNormalize']],
     ],
     'sql' => [
         'type' => 'blob',
