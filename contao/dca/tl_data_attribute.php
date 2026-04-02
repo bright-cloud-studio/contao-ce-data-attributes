@@ -76,14 +76,7 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
     // Palettes
     'palettes' => array
     (
-        '__selector__'                => array('value_type'),
-        'default'                     => '{data_attribute_legend},label,attribute_name,category;{value_legend},value_type,default_value;{description_legend},description;{publish_legend},published;'
-    ),
-
-    // Subpalettes
-    'subpalettes' => array
-    (
-        'value_type_select'           => 'allowed_values'
+        'default'                     => '{data_attribute_legend},label,attribute_name,category;{value_legend},default_value;{description_legend},description;{publish_legend},published;'
     ),
 
     // Fields
@@ -98,9 +91,6 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
         (
             'sql'                     => "int(10) unsigned NOT NULL default '0'"
         ),
-
-
-
         'label' => array
         (
             'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['label'],
@@ -133,20 +123,6 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
             'eval'                    => array('maxlength'=>128, 'tl_class'=>'w50 clr'),
             'sql'                     => "varchar(128) NOT NULL default ''"
         ),
-
-
-
-        'value_type' => array
-        (
-            'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['value_type'],
-            'inputType'               => 'select',
-            'default'                 => 'freetext',
-            'filter'                  => true,
-            'options'                 => array('freetext', 'select', 'integer', 'boolean'),
-            'reference'               => &$GLOBALS['TL_LANG']['tl_data_attribute']['value_type_options'],
-            'eval'                    => array('mandatory'=>true, 'submitOnChange'=>true, 'tl_class'=>'w50'),
-            'sql'                     => "varchar(32) NOT NULL default 'freetext'"
-        ),
         'allowed_values' => array
         (
             'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['allowed_values'],
@@ -162,9 +138,6 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
             'eval'                    => array('maxlength'=>255, 'tl_class'=>'w50 clr'),
             'sql'                     => "varchar(255) NOT NULL default ''"
         ),
-
-
-
         'description' => array
         (
             'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['description'],
@@ -172,9 +145,6 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
             'eval'                    => array('rte'=>'', 'style'=>'height:60px', 'tl_class'=>'clr'),
             'sql'                     => "text NULL"
         ),
-
-
-
         'published' => array
         (
             'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['published'],
