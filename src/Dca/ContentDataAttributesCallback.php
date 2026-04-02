@@ -23,7 +23,7 @@ class ContentDataAttributesCallback
         }
 
         $attributeRows = Database::getInstance()
-            ->execute("SELECT id, label, value_type, allowed_values, default_value, published FROM tl_data_attribute WHERE published='1'")
+            ->execute("SELECT id, label, allowed_values, default_value, published FROM tl_data_attribute WHERE published='1'")
             ->fetchAllAssoc();
 
         $attributes = [];
@@ -34,7 +34,6 @@ class ContentDataAttributesCallback
             $attributes[(int) $row['id']] = [
                 'id' => (int) $row['id'],
                 'label' => (string) $row['label'],
-                'value_type' => (string) $row['value_type'],
                 'allowed_values' => \is_array($allowedValues) ? $allowedValues : [],
                 'default_value' => (string) ($row['default_value'] ?? ''),
             ];
