@@ -29,7 +29,7 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
         (
             'mode'                    => DataContainer::MODE_SORTED,
             'flag'                    => DataContainer::SORT_ASC,
-            'fields'                  => array('label ASC'),
+            'fields'                  => array('category ASC'),
             'rootPaste'               => false,
             'showRootTrails'          => false,
             'icon'                    => 'pagemounts.svg',
