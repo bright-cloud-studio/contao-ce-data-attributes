@@ -94,17 +94,18 @@
     function updateRow(select) {
         var attrId = parseInt(select.value, 10) || 0;
         var wrap = select.closest ? select.closest('.bcs-attr-wrap') : select.parentElement;
-        var td = select.closest ? select.closest('td') : getParentTd(select);
-        if (!td) {
-            return;
-        }
-        var tr = td.parentElement;
+        var tr = select.closest ? select.closest('tr') : getParentTr(select);
         if (!tr) {
             return;
         }
 
-        var tds = tr.querySelectorAll('td');
-        var valueTd = tds[1];
+        // Find the value cell by name rather than positional index, so column
+        // order and any extra handle/button columns don't affect us.
+        var valueName = select.name.replace('[attribute_id]', '[value]');
+        var valueEl = tr.querySelector('input[name="' + valueName + '"], select.bcs-value-select');
+        var valueTd = valueEl
+            ? (valueEl.closest ? valueEl.closest('td') : getParentTd(valueEl))
+            : null;
         if (!valueTd) {
             return;
         }
@@ -216,6 +217,17 @@
         var node = el.parentElement;
         while (node) {
             if (node.tagName === 'TD') {
+                return node;
+            }
+            node = node.parentElement;
+        }
+        return null;
+    }
+
+    function getParentTr(el) {
+        var node = el.parentElement;
+        while (node) {
+            if (node.tagName === 'TR') {
                 return node;
             }
             node = node.parentElement;
