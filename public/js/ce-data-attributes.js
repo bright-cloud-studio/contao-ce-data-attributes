@@ -1,232 +1,175 @@
-(function () {
-    'use strict';
+<?php
 
-    var attributeMap = {};
+use Contao\DataContainer;
+use Contao\DC_Table;
 
-    var BADGE_SELECT_STYLE = [
-        'position:absolute',
-        'right:28px',
-        'top:50%',
-        'transform:translateY(-50%)',
-        'pointer-events:none',
-        'font-size:11px',
-        'font-weight:500',
-        'padding:2px 8px',
-        'border-radius:10px',
-        'background:#E1F5EE',
-        'color:#0F6E56',
-        'line-height:1.4'
-    ].join(';');
+/* Table tl_data_attribute */
+$GLOBALS['TL_DCA']['tl_data_attribute'] = array
+(
 
-    var BADGE_TEXT_STYLE = [
-        'position:absolute',
-        'right:28px',
-        'top:50%',
-        'transform:translateY(-50%)',
-        'pointer-events:none',
-        'font-size:11px',
-        'font-weight:500',
-        'padding:2px 8px',
-        'border-radius:10px',
-        'background:#E6F1FB',
-        'color:#185FA5',
-        'line-height:1.4'
-    ].join(';');
+    // Config
+    'config' => array
+    (
+        'dataContainer'               => DC_Table::class,
+        'switchToEdit'                => false,
+        'enableVersioning'            => true,
+        'sql' => array
+        (
+            'keys' => array
+            (
+                'id'                  => 'primary'
+            )
+        )
+    ),
 
-    function init() {
-        if (typeof window.BcsAttributeMap !== 'undefined') {
-            attributeMap = window.BcsAttributeMap;
-        } else {
-            return;
-        }
+    // List
+    'list' => array
+    (
+        'sorting' => array
+        (
+            'mode'                    => DataContainer::MODE_SORTED,
+            'flag'                    => DataContainer::SORT_ASC,
+            'fields'                  => array('category ASC'),
+            'rootPaste'               => false,
+            'showRootTrails'          => false,
+            'icon'                    => 'pagemounts.svg',
+            'panelLayout'             => 'filter;sort,search,limit'
+        ),
+        'label' => array
+        (
+            'fields'                  => array('label', 'attribute_name'),
+            'format'                  => '%s <span style="color:#999">[data-%s]</span>'
+        ),
+        'global_operations' => array
+        (
+            'all' => array
+            (
+                'label'               => &$GLOBALS['TL_LANG']['MSC']['all'],
+                'href'                => 'act=select',
+                'class'               => 'header_edit_all',
+                'attributes'          => 'onclick="Backend.getScrollOffset()" accesskey="e"'
+            )
+        ),
+        'operations' => array
+        (
+            'edit' => array
+            (
+                'label'               => &$GLOBALS['TL_LANG']['tl_data_attribute']['edit'],
+                'href'                => 'act=edit',
+                'icon'                => 'edit.gif'
+            ),
+            'toggle' => array
+            (
+                'href'                => 'act=toggle&field=published',
+                'icon'                => 'visible.svg',
+                'toggleField'         => 'published',
+            ),
+            'show' => array
+            (
+                'label'               => &$GLOBALS['TL_LANG']['tl_data_attribute']['show'],
+                'href'                => 'act=show',
+                'icon'                => 'show.gif'
+            )
+        )
+    ),
 
-        var container = document.getElementById('ctrl_ce_data_attributes');
-        if (!container) {
-            return;
-        }
+    // Palettes
+    'palettes' => array
+    (
+        '__selector__'                => array('value_type'),
+        'default'                     => '{data_attribute_legend},label,attribute_name,category;{value_legend},value_type;{description_legend},description;{publish_legend},published;'
+    ),
 
-        initAllRows(container);
+    // Subpalettes
+    'subpalettes' => array
+    (
+        'value_type_freetext'         => 'default_value',
+        'value_type_select'           => 'allowed_values',
+    ),
 
-        var observer = new MutationObserver(function (mutations) {
-            for (var i = 0; i < mutations.length; i++) {
-                var added = mutations[i].addedNodes;
-                for (var j = 0; j < added.length; j++) {
-                    var node = added[j];
-                    if (node.nodeType !== 1) {
-                        continue;
-                    }
-                    var selects = node.querySelectorAll('select[name*="[attribute_id]"]');
-                    for (var k = 0; k < selects.length; k++) {
-                        initRow(selects[k]);
-                    }
-                }
-            }
-        });
-
-        observer.observe(container, { childList: true, subtree: true });
-
-        container.addEventListener('change', function (e) {
-            var target = e.target;
-            if (target && target.name && target.name.indexOf('[attribute_id]') !== -1) {
-                updateRow(target);
-            }
-        });
-    }
-
-    function initAllRows(container) {
-        var selects = container.querySelectorAll('select[name*="[attribute_id]"]');
-        for (var i = 0; i < selects.length; i++) {
-            initRow(selects[i]);
-        }
-    }
-
-    function initRow(select) {
-        if (!select.parentElement.classList.contains('bcs-attr-wrap')) {
-            var wrap = document.createElement('div');
-            wrap.className = 'bcs-attr-wrap';
-            wrap.style.cssText = 'position:relative;display:block;width:100%;';
-            select.parentNode.insertBefore(wrap, select);
-            wrap.appendChild(select);
-        }
-        updateRow(select);
-    }
-
-    function updateRow(select) {
-        var attrId = parseInt(select.value, 10) || 0;
-        var wrap = select.closest ? select.closest('.bcs-attr-wrap') : select.parentElement;
-        var td = select.closest ? select.closest('td') : getParentTd(select);
-        if (!td) {
-            return;
-        }
-        var tr = td.parentElement;
-        if (!tr) {
-            return;
-        }
-
-        var tds = tr.querySelectorAll('td');
-        var valueTd = tds[1];
-        if (!valueTd) {
-            return;
-        }
-
-        var existingBadge = wrap.querySelector('.bcs-type-badge');
-        if (existingBadge) {
-            existingBadge.parentNode.removeChild(existingBadge);
-        }
-
-        var attr = attrId ? attributeMap[attrId] : null;
-        var type = attr ? attr.type : 'freetext';
-
-        if (attrId && attr) {
-            var badge = document.createElement('span');
-            badge.className = 'bcs-type-badge';
-            badge.textContent = type === 'select' ? 'select' : 'text';
-            badge.style.cssText = type === 'select' ? BADGE_SELECT_STYLE : BADGE_TEXT_STYLE;
-            wrap.appendChild(badge);
-        }
-
-        updateValueField(valueTd, attr, type);
-    }
-
-    function updateValueField(valueTd, attr, type) {
-        var existingInput = valueTd.querySelector('input[type="text"]');
-        var existingSelect = valueTd.querySelector('select.bcs-value-select');
-        var currentValue = existingInput
-            ? existingInput.value
-            : (existingSelect ? existingSelect.value : '');
-
-        if (type === 'select' && attr && attr.options && attr.options.length) {
-            if (existingSelect) {
-                applySelectStyle(existingSelect);
-                return;
-            }
-
-            var sel = document.createElement('select');
-            sel.className = 'bcs-value-select';
-
-            if (existingInput) {
-                sel.name = existingInput.name;
-                if (existingInput.id) {
-                    sel.id = existingInput.id;
-                }
-            }
-
-            applySelectStyle(sel);
-
-            for (var i = 0; i < attr.options.length; i++) {
-                var opt = document.createElement('option');
-                opt.value = attr.options[i].key;
-                opt.textContent = attr.options[i].value || attr.options[i].key;
-                if (attr.options[i].key === currentValue) {
-                    opt.selected = true;
-                }
-                sel.appendChild(opt);
-            }
-
-            if (existingInput) {
-                valueTd.replaceChild(sel, existingInput);
-            } else {
-                valueTd.appendChild(sel);
-            }
-
-        } else {
-            if (existingInput) {
-                removeSelectStyle(existingInput);
-                if (!existingInput.value && attr && attr.default) {
-                    existingInput.value = attr.default;
-                }
-                return;
-            }
-
-            var inp = document.createElement('input');
-            inp.type = 'text';
-            inp.className = 'tl_text';
-
-            if (existingSelect) {
-                inp.name = existingSelect.name;
-                if (existingSelect.id) {
-                    inp.id = existingSelect.id;
-                }
-            }
-
-            inp.value = (attr && attr.default) ? attr.default : currentValue;
-
-            if (existingSelect) {
-                valueTd.replaceChild(inp, existingSelect);
-            } else {
-                valueTd.appendChild(inp);
-            }
-        }
-    }
-
-    function applySelectStyle(el) {
-        el.style.backgroundColor = '#E1F5EE';
-        el.style.borderColor = '#5DCAA5';
-        el.style.color = '#0F6E56';
-        el.style.width = '100%';
-    }
-
-    function removeSelectStyle(el) {
-        el.style.backgroundColor = '';
-        el.style.borderColor = '';
-        el.style.color = '';
-    }
-
-    function getParentTd(el) {
-        var node = el.parentElement;
-        while (node) {
-            if (node.tagName === 'TD') {
-                return node;
-            }
-            node = node.parentElement;
-        }
-        return null;
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-}());
+    // Fields
+    'fields' => array
+    (
+        // Contao Fields
+        'id' => array
+        (
+            'sql'                     => "int(10) unsigned NOT NULL auto_increment"
+        ),
+        'tstamp' => array
+        (
+            'sql'                     => "int(10) unsigned NOT NULL default '0'"
+        ),
+        'label' => array
+        (
+            'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['label'],
+            'inputType'               => 'text',
+            'default'                 => '',
+            'filter'                  => false,
+            'search'                  => true,
+            'sorting'                 => true,
+            'eval'                    => array('mandatory'=>true, 'maxlength'=>255, 'tl_class'=>'w50'),
+            'sql'                     => "varchar(255) NOT NULL default ''"
+        ),
+        'attribute_name' => array
+        (
+            'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['attribute_name'],
+            'inputType'               => 'text',
+            'default'                 => '',
+            'filter'                  => false,
+            'search'                  => true,
+            'eval'                    => array('mandatory'=>true, 'maxlength'=>128, 'rgxp'=>'alias', 'tl_class'=>'w50'),
+            'sql'                     => "varchar(128) NOT NULL default ''"
+        ),
+        'category' => array
+        (
+            'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['category'],
+            'inputType'               => 'text',
+            'default'                 => '',
+            'filter'                  => true,
+            'search'                  => false,
+            'sorting'                 => true,
+            'eval'                    => array('maxlength'=>128, 'tl_class'=>'w50 clr'),
+            'sql'                     => "varchar(128) NOT NULL default ''"
+        ),
+        'value_type' => array
+        (
+            'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['value_type'],
+            'inputType'               => 'radio',
+            'default'                 => 'freetext',
+            'options'                 => array('freetext', 'select'),
+            'reference'               => &$GLOBALS['TL_LANG']['tl_data_attribute']['value_type_options'],
+            'eval'                    => array('submitOnChange'=>true, 'tl_class'=>'clr'),
+            'sql'                     => "varchar(16) NOT NULL default 'freetext'"
+        ),
+        'allowed_values' => array
+        (
+            'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['allowed_values'],
+            'inputType'               => 'keyValueWizard',
+            'eval'                    => array('tl_class'=>'clr'),
+            'sql'                     => "blob NULL"
+        ),
+        'default_value' => array
+        (
+            'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['default_value'],
+            'inputType'               => 'text',
+            'default'                 => '',
+            'eval'                    => array('maxlength'=>255, 'tl_class'=>'w50 clr'),
+            'sql'                     => "varchar(255) NOT NULL default ''"
+        ),
+        'description' => array
+        (
+            'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['description'],
+            'inputType'               => 'textarea',
+            'eval'                    => array('rte'=>'', 'style'=>'height:60px', 'tl_class'=>'clr'),
+            'sql'                     => "text NULL"
+        ),
+        'published' => array
+        (
+            'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['published'],
+            'exclude'                 => true,
+            'inputType'               => 'checkbox',
+            'eval'                    => array('submitOnChange'=>false, 'doNotCopy'=>true),
+            'sql'                     => "char(1) NOT NULL default ''"
+        )
+    )
+);
