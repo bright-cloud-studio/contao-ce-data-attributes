@@ -76,7 +76,15 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
     // Palettes
     'palettes' => array
     (
-        'default'                     => '{data_attribute_legend},label,attribute_name,category;{value_legend},default_value;{description_legend},description;{publish_legend},published;'
+        '__selector__'                => array('value_type'),
+        'default'                     => '{data_attribute_legend},label,attribute_name,category;{value_legend},value_type;{description_legend},description;{publish_legend},published;'
+    ),
+
+    // Subpalettes
+    'subpalettes' => array
+    (
+        'value_type_freetext'         => 'default_value',
+        'value_type_select'           => 'allowed_values',
     ),
 
     // Fields
@@ -122,6 +130,16 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
             'sorting'                 => true,
             'eval'                    => array('maxlength'=>128, 'tl_class'=>'w50 clr'),
             'sql'                     => "varchar(128) NOT NULL default ''"
+        ),
+        'value_type' => array
+        (
+            'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['value_type'],
+            'inputType'               => 'radio',
+            'default'                 => 'freetext',
+            'options'                 => array('freetext', 'select'),
+            'reference'               => &$GLOBALS['TL_LANG']['tl_data_attribute']['value_type_options'],
+            'eval'                    => array('submitOnChange'=>true, 'tl_class'=>'clr'),
+            'sql'                     => "varchar(16) NOT NULL default 'freetext'"
         ),
         'allowed_values' => array
         (
