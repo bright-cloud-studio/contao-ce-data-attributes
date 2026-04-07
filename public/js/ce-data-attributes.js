@@ -33,7 +33,20 @@
         'line-height:1.4'
     ].join(';');
 
-    function init() {
+    var BADGE_BOOLEAN_STYLE = [
+        'position:absolute',
+        'right:28px',
+        'top:50%',
+        'transform:translateY(-50%)',
+        'pointer-events:none',
+        'font-size:11px',
+        'font-weight:500',
+        'padding:2px 8px',
+        'border-radius:10px',
+        'background:#F3EEFB',
+        'color:#6B21A8',
+        'line-height:1.4'
+    ].join(';');
         if (typeof window.BcsAttributeMap !== 'undefined') {
             attributeMap = window.BcsAttributeMap;
         } else {
@@ -120,8 +133,16 @@
         if (attrId && attr) {
             var badge = document.createElement('span');
             badge.className = 'bcs-type-badge';
-            badge.textContent = type === 'select' ? 'select' : 'text';
-            badge.style.cssText = type === 'select' ? BADGE_SELECT_STYLE : BADGE_TEXT_STYLE;
+            if (type === 'select') {
+                badge.textContent = 'select';
+                badge.style.cssText = BADGE_SELECT_STYLE;
+            } else if (type === 'boolean') {
+                badge.textContent = 'boolean';
+                badge.style.cssText = BADGE_BOOLEAN_STYLE;
+            } else {
+                badge.textContent = 'text';
+                badge.style.cssText = BADGE_TEXT_STYLE;
+            }
             wrap.appendChild(badge);
         }
 
@@ -135,31 +156,40 @@
             ? existingInput.value
             : (existingSelect ? existingSelect.value : '');
 
-        if (type === 'select' && attr && attr.options && attr.options.length) {
+        if ((type === 'select' && attr && attr.options && attr.options.length) || type === 'boolean') {
             if (existingSelect) {
-                applySelectStyle(existingSelect);
-                return;
+                // Re-check: if the select was built for boolean but type is now select or vice-versa,
+                // we need to rebuild. Use a data attribute to track which type built this select.
+                var builtFor = existingSelect.getAttribute('data-bcs-type');
+                if (builtFor === type) {
+                    applySelectStyle(existingSelect, type);
+                    return;
+                }
+                // Wrong type — fall through to rebuild by treating it as non-existent.
+                existingSelect.parentNode.removeChild(existingSelect);
+                existingSelect = null;
             }
 
             var sel = document.createElement('select');
             sel.className = 'bcs-value-select';
+            sel.setAttribute('data-bcs-type', type);
 
             if (existingInput) {
                 sel.name = existingInput.name;
-                if (existingInput.id) {
-                    sel.id = existingInput.id;
-                }
+                if (existingInput.id) { sel.id = existingInput.id; }
             }
 
-            applySelectStyle(sel);
+            applySelectStyle(sel, type);
 
-            for (var i = 0; i < attr.options.length; i++) {
+            var options = type === 'boolean'
+                ? [{key: 'true', value: 'true'}, {key: 'false', value: 'false'}]
+                : attr.options;
+
+            for (var i = 0; i < options.length; i++) {
                 var opt = document.createElement('option');
-                opt.value = attr.options[i].key;
-                opt.textContent = attr.options[i].value || attr.options[i].key;
-                if (attr.options[i].key === currentValue) {
-                    opt.selected = true;
-                }
+                opt.value = options[i].key;
+                opt.textContent = options[i].value || options[i].key;
+                if (options[i].key === currentValue) { opt.selected = true; }
                 sel.appendChild(opt);
             }
 
@@ -184,9 +214,7 @@
 
             if (existingSelect) {
                 inp.name = existingSelect.name;
-                if (existingSelect.id) {
-                    inp.id = existingSelect.id;
-                }
+                if (existingSelect.id) { inp.id = existingSelect.id; }
             }
 
             inp.value = (attr && attr.default) ? attr.default : currentValue;
@@ -199,10 +227,16 @@
         }
     }
 
-    function applySelectStyle(el) {
-        el.style.backgroundColor = '#E1F5EE';
-        el.style.borderColor = '#5DCAA5';
-        el.style.color = '#0F6E56';
+    function applySelectStyle(el, type) {
+        if (type === 'boolean') {
+            el.style.backgroundColor = '#F3EEFB';
+            el.style.borderColor = '#A855F7';
+            el.style.color = '#6B21A8';
+        } else {
+            el.style.backgroundColor = '#E1F5EE';
+            el.style.borderColor = '#5DCAA5';
+            el.style.color = '#0F6E56';
+        }
         el.style.width = '100%';
     }
 
