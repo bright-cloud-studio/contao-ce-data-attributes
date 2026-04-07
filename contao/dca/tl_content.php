@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
 use Contao\Database;
 
+$GLOBALS['TL_JAVASCRIPT'][] = 'bundles/bcsdataattributes/js/ce-data-attributes.js|static';
+
 $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_attributes'],
     'exclude' => true,
@@ -44,6 +46,9 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     ],
     'save_callback' => [
         [\Bcs\DataAttributesBundle\Dca\ContentDataAttributesCallback::class, 'validateAndNormalize'],
+    ],
+    'wizard' => [
+        [\Bcs\DataAttributesBundle\Dca\ContentDataAttributesCallback::class, 'getAttributeMapWizard'],
     ],
     'sql' => [
         'type' => 'blob',
