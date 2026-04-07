@@ -11,7 +11,7 @@ $GLOBALS['TL_LANG']['tl_data_attribute']['label']                  = array('Labe
 $GLOBALS['TL_LANG']['tl_data_attribute']['attribute_name']         = array('Attribute Name', 'The data attribute name suffix. e.g. "aos" produces data-aos. Lowercase, alphanumeric and hyphens only.');
 $GLOBALS['TL_LANG']['tl_data_attribute']['category']               = array('Category',       'Group this attribute into a category for easier management, e.g. "Animation" or "Tracking".');
 $GLOBALS['TL_LANG']['tl_data_attribute']['value_type']             = array('Value Type',     'Choose how the value is entered on a content element.');
-$GLOBALS['TL_LANG']['tl_data_attribute']['value_type_options']     = array('freetext' => 'Free text — editor can type any value', 'select' => 'Select — editor must choose from a defined list');
+$GLOBALS['TL_LANG']['tl_data_attribute']['value_type_options']     = array('freetext' => 'Free text — editor can type any value', 'select' => 'Select — editor must choose from a defined list', 'boolean' => 'Boolean — editor chooses true or false');
 $GLOBALS['TL_LANG']['tl_data_attribute']['allowed_values']         = array('Allowed Values', 'Define the options the editor can choose from. The key is the stored attribute value; the value is the label shown in the dropdown.');
 $GLOBALS['TL_LANG']['tl_data_attribute']['default_value']          = array('Default Value',  'Optional. Pre-fills the value field when linking this attribute to a Content Element.');
 $GLOBALS['TL_LANG']['tl_data_attribute']['description']            = array('Description',    'Internal notes explaining what this attribute does and what library or behaviour it triggers.');
