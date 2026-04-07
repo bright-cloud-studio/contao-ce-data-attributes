@@ -85,44 +85,6 @@ class ContentDataAttributesCallback
     }
 
 
-    public function getAttributeMapWizard(?DataContainer $dc = null): string
-    {
-        $result = Database::getInstance()
-            ->execute("SELECT id, value_type, allowed_values, default_value FROM tl_data_attribute WHERE published='1'");
-
-        $map = [];
-
-        while ($result->next()) {
-            $allowedValues = StringUtil::deserialize($result->allowed_values, true);
-            $options = [];
-
-            if (is_array($allowedValues)) {
-                foreach ($allowedValues as $entry) {
-                    if (!isset($entry['key'])) {
-                        continue;
-                    }
-
-                    $options[] = [
-                        'key'   => (string) $entry['key'],
-                        'value' => (string) ($entry['value'] ?? $entry['key']),
-                    ];
-                }
-            }
-
-            $map[(int) $result->id] = [
-                'type'    => $result->value_type ?: 'freetext',
-                'default' => (string) $result->default_value,
-                'options' => $options,
-            ];
-        }
-
-        return sprintf(
-            '<div id="bcs-attribute-map" style="display:none" data-map="%s"></div>',
-            htmlspecialchars(json_encode($map, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8')
-        );
-    }
-
-
     private function normalizeValue(string $rawValue, array $definition): string
     {
         $label         = $definition['label'] ?? 'Attribute';
