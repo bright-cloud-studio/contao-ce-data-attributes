@@ -85,6 +85,7 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
     (
         'value_type_freetext'         => 'default_value',
         'value_type_select'           => 'allowed_values',
+        'value_type_boolean'          => '',
     ),
 
     // Fields
@@ -136,7 +137,7 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
             'label'                   => &$GLOBALS['TL_LANG']['tl_data_attribute']['value_type'],
             'inputType'               => 'radio',
             'default'                 => 'freetext',
-            'options'                 => array('freetext', 'select'),
+            'options'                 => array('freetext', 'select', 'boolean'),
             'reference'               => &$GLOBALS['TL_LANG']['tl_data_attribute']['value_type_options'],
             'eval'                    => array('submitOnChange'=>true, 'tl_class'=>'clr'),
             'sql'                     => "varchar(16) NOT NULL default 'freetext'"
