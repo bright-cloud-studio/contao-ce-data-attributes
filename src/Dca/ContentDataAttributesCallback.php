@@ -18,12 +18,12 @@ class ContentDataAttributesCallback
 
         $rows = StringUtil::deserialize($value, true);
 
-        if (!\is_array($rows) || [] === $rows) {
+        if (!is_array($rows) || [] === $rows) {
             return '';
         }
 
         $attributeRows = Database::getInstance()
-            ->execute("SELECT id, label, allowed_values, default_value, published FROM tl_data_attribute WHERE published='1'")
+            ->execute("SELECT id, label, value_type, allowed_values, default_value, published FROM tl_data_attribute WHERE published='1'")
             ->fetchAllAssoc();
 
         $attributes = [];
@@ -32,10 +32,11 @@ class ContentDataAttributesCallback
             $allowedValues = StringUtil::deserialize($row['allowed_values'] ?? null, true);
 
             $attributes[(int) $row['id']] = [
-                'id' => (int) $row['id'],
-                'label' => (string) $row['label'],
-                'allowed_values' => \is_array($allowedValues) ? $allowedValues : [],
-                'default_value' => (string) ($row['default_value'] ?? ''),
+                'id'             => (int) $row['id'],
+                'label'          => (string) $row['label'],
+                'value_type'     => (string) ($row['value_type'] ?? 'freetext'),
+                'allowed_values' => is_array($allowedValues) ? $allowedValues : [],
+                'default_value'  => (string) ($row['default_value'] ?? ''),
             ];
         }
 
@@ -43,7 +44,7 @@ class ContentDataAttributesCallback
         $usedAttributeIds = [];
 
         foreach ($rows as $index => $row) {
-            if (!\is_array($row)) {
+            if (!is_array($row)) {
                 continue;
             }
 
@@ -72,7 +73,7 @@ class ContentDataAttributesCallback
 
             $normalized[] = [
                 'attribute_id' => $attributeId,
-                'value' => $normalizedValue,
+                'value'        => $normalizedValue,
             ];
         }
 
@@ -83,10 +84,49 @@ class ContentDataAttributesCallback
         return serialize($normalized);
     }
 
+
+    public function getAttributeMapWizard(?DataContainer $dc = null): string
+    {
+        $result = Database::getInstance()
+            ->execute("SELECT id, value_type, allowed_values, default_value FROM tl_data_attribute WHERE published='1'");
+
+        $map = [];
+
+        while ($result->next()) {
+            $allowedValues = StringUtil::deserialize($result->allowed_values, true);
+            $options = [];
+
+            if (is_array($allowedValues)) {
+                foreach ($allowedValues as $entry) {
+                    if (!isset($entry['key'])) {
+                        continue;
+                    }
+
+                    $options[] = [
+                        'key'   => (string) $entry['key'],
+                        'value' => (string) ($entry['value'] ?? $entry['key']),
+                    ];
+                }
+            }
+
+            $map[(int) $result->id] = [
+                'type'    => $result->value_type ?: 'freetext',
+                'default' => (string) $result->default_value,
+                'options' => $options,
+            ];
+        }
+
+        return sprintf(
+            '<div id="bcs-attribute-map" style="display:none" data-map="%s"></div>',
+            htmlspecialchars(json_encode($map, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8')
+        );
+    }
+
+
     private function normalizeValue(string $rawValue, array $definition): string
     {
-        $label = $definition['label'] ?? 'Attribute';
-        $type = $definition['value_type'] ?? 'freetext';
+        $label         = $definition['label'] ?? 'Attribute';
+        $type          = $definition['value_type'] ?? 'freetext';
         $allowedValues = $definition['allowed_values'] ?? [];
 
         if ('' === $rawValue) {
@@ -115,7 +155,9 @@ class ContentDataAttributesCallback
                 throw new \RuntimeException(sprintf('The value for "%s" must be true or false.', $label));
 
             case 'select':
-                if (!\array_key_exists($rawValue, $allowedValues) && !\in_array($rawValue, $allowedValues, true)) {
+                $validKeys = array_column($allowedValues, 'key');
+
+                if (!in_array($rawValue, $validKeys, true)) {
                     throw new \RuntimeException(sprintf('The value for "%s" is not one of the allowed options.', $label));
                 }
 
