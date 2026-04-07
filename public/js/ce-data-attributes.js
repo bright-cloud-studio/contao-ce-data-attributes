@@ -34,14 +34,9 @@
     ].join(';');
 
     function init() {
-        var mapEl = document.getElementById('bcs-attribute-map');
-        if (!mapEl) {
-            return;
-        }
-
-        try {
-            attributeMap = JSON.parse(mapEl.getAttribute('data-map') || '{}');
-        } catch (e) {
+        if (typeof window.BcsAttributeMap !== 'undefined') {
+            attributeMap = window.BcsAttributeMap;
+        } else {
             return;
         }
 
