@@ -16,14 +16,42 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
             'label' => &$GLOBALS['TL_LANG']['tl_content']['ce_data_key'],
             'inputType' => 'select',
             'options_callback' => static function () {
-                $options = [];
+                $db = \Contao\Database::getInstance();
 
-                $result = \Contao\Database::getInstance()
-                    ->execute("SELECT id, label, attribute_name FROM tl_data_attribute WHERE published='1' ORDER BY label ASC");
+                $result = $db->execute(
+                    "SELECT id, label, attribute_name, value_type, allowed_values, default_value FROM tl_data_attribute WHERE published='1' ORDER BY label ASC"
+                );
+
+                $options = [];
+                $map     = [];
 
                 while ($result->next()) {
                     $options[$result->id] = sprintf('%s [data-%s]', $result->label, $result->attribute_name);
+
+                    $allowedValues = \Contao\StringUtil::deserialize($result->allowed_values, true);
+                    $optionsList   = [];
+
+                    if (is_array($allowedValues)) {
+                        foreach ($allowedValues as $entry) {
+                            if (!isset($entry['key'])) {
+                                continue;
+                            }
+                            $optionsList[] = [
+                                'key'   => (string) $entry['key'],
+                                'value' => (string) ($entry['value'] ?? $entry['key']),
+                            ];
+                        }
+                    }
+
+                    $map[(int) $result->id] = [
+                        'type'    => $result->value_type ?: 'freetext',
+                        'default' => (string) $result->default_value,
+                        'options' => $optionsList,
+                    ];
                 }
+
+                $json = json_encode($map, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+                $GLOBALS['TL_MOOTOOLS'][] = '<script>window.BcsAttributeMap=' . $json . ';</script>';
 
                 return $options;
             },
@@ -46,9 +74,6 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['ce_data_attributes'] = [
     ],
     'save_callback' => [
         [\Bcs\DataAttributesBundle\Dca\ContentDataAttributesCallback::class, 'validateAndNormalize'],
-    ],
-    'wizard' => [
-        [\Bcs\DataAttributesBundle\Dca\ContentDataAttributesCallback::class, 'getAttributeMapWizard'],
     ],
     'sql' => [
         'type' => 'blob',
