@@ -84,8 +84,7 @@ $GLOBALS['TL_DCA']['tl_data_attribute'] = array
     'subpalettes' => array
     (
         'value_type_freetext'         => 'default_value',
-        'value_type_select'           => 'allowed_values',
-        'value_type_boolean'          => '',
+        'value_type_select'           => 'allowed_values'
     ),
 
     // Fields
