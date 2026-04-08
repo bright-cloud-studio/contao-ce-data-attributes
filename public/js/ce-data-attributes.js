@@ -40,37 +40,49 @@
             return;
         }
 
-        var container = document.getElementById('ctrl_ce_data_attributes');
-        if (!container) {
-            return;
-        }
+        // Defer setup so Contao's widget JS finishes rendering rows first.
+        // This ensures initAllRows sees the final DOM (correct badge positioning)
+        // on both hard reload and Turbo Drive post-save navigation.
+        setTimeout(function () {
+            var container = document.getElementById('ctrl_ce_data_attributes');
+            if (!container) {
+                return;
+            }
 
-        initAllRows(container);
+            initAllRows(container);
 
-        var observer = new MutationObserver(function (mutations) {
-            for (var i = 0; i < mutations.length; i++) {
-                var added = mutations[i].addedNodes;
-                for (var j = 0; j < added.length; j++) {
-                    var node = added[j];
-                    if (node.nodeType !== 1) {
-                        continue;
-                    }
-                    var selects = node.querySelectorAll('select[name*="[attribute_id]"]');
-                    for (var k = 0; k < selects.length; k++) {
-                        initRow(selects[k]);
+            var observer = new MutationObserver(function (mutations) {
+                for (var i = 0; i < mutations.length; i++) {
+                    var added = mutations[i].addedNodes;
+                    for (var j = 0; j < added.length; j++) {
+                        var node = added[j];
+                        if (node.nodeType !== 1) {
+                            continue;
+                        }
+                        var selects = node.querySelectorAll('select[name*="[attribute_id]"]');
+                        for (var k = 0; k < selects.length; k++) {
+                            // Skip selects already wrapped by us — these are mutations
+                            // caused by our own initRow, not a genuinely new row.
+                            var alreadyWrapped = selects[k].closest
+                                ? selects[k].closest('.bcs-attr-wrap')
+                                : selects[k].parentElement.classList.contains('bcs-attr-wrap');
+                            if (!alreadyWrapped) {
+                                initRow(selects[k]);
+                            }
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        observer.observe(container, { childList: true, subtree: true });
+            observer.observe(container, { childList: true, subtree: true });
 
-        container.addEventListener('change', function (e) {
-            var target = e.target;
-            if (target && target.name && target.name.indexOf('[attribute_id]') !== -1) {
-                updateRow(target);
-            }
-        });
+            container.addEventListener('change', function (e) {
+                var target = e.target;
+                if (target && target.name && target.name.indexOf('[attribute_id]') !== -1) {
+                    updateRow(target);
+                }
+            });
+        }, 0);
     }
 
     function initAllRows(container) {
@@ -81,13 +93,38 @@
     }
 
     function initRow(select) {
-        if (!select.parentElement.classList.contains('bcs-attr-wrap')) {
-            var wrap = document.createElement('div');
-            wrap.className = 'bcs-attr-wrap';
-            wrap.style.cssText = 'position:relative;display:block;width:100%;';
-            select.parentNode.insertBefore(wrap, select);
-            wrap.appendChild(select);
+        // If this exact select element has already been processed, skip it.
+        // This prevents double-init when both initAllRows and the MutationObserver
+        // fire for the same element (e.g. hard reload vs Turbo navigation).
+        if (select.dataset.bcsInit) {
+            return;
         }
+        select.dataset.bcsInit = '1';
+
+        // Contao uses Choices.js which hides the native <select> inside a .choices
+        // div. The visible input area is .choices__inner — use that as the
+        // positioning context so the badge's top:50% resolves against the correct height.
+        var choicesEl = select.closest ? select.closest('.choices') : null;
+        var positionTarget = choicesEl
+            ? (choicesEl.querySelector('.choices__inner') || choicesEl)
+            : null;
+
+        if (positionTarget) {
+            if (!positionTarget.classList.contains('bcs-attr-wrap')) {
+                positionTarget.classList.add('bcs-attr-wrap');
+                positionTarget.style.position = 'relative';
+            }
+        } else {
+            // Fallback: no Choices.js, wrap the native select directly
+            if (!select.parentElement.classList.contains('bcs-attr-wrap')) {
+                var wrap = document.createElement('div');
+                wrap.className = 'bcs-attr-wrap';
+                wrap.style.cssText = 'position:relative;display:block;width:100%;';
+                select.parentNode.insertBefore(wrap, select);
+                wrap.appendChild(select);
+            }
+        }
+
         updateRow(select);
     }
 
