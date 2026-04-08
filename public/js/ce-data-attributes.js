@@ -13,8 +13,8 @@
         'font-weight:500',
         'padding:2px 8px',
         'border-radius:10px',
-        'background:#E1F5EE',
-        'color:#0F6E56',
+        'background:#2c55d8',
+        'color:#FFFFFF',
         'line-height:1.4'
     ].join(';');
 
@@ -28,8 +28,8 @@
         'font-weight:500',
         'padding:2px 8px',
         'border-radius:10px',
-        'background:#E6F1FB',
-        'color:#185FA5',
+        'background:#2c55d8',
+        'color:#FFFFFF',
         'line-height:1.4'
     ].join(';');
 
@@ -280,9 +280,12 @@
     }
 
     function applySelectStyle(el) {
-        el.style.backgroundColor = '#E1F5EE';
-        el.style.borderColor = '#5DCAA5';
-        el.style.color = '#0F6E56';
+        el.style.backgroundColor = '#2c55d8';
+        el.style.borderColor = '#001f85';
+        el.style.color = '#FFFFFF';
+        el.style.paddingTop = '5px';
+        el.style.paddingBottom = '5px';
+        el.style.paddingLeft = '5px';
         el.style.width = '100%';
     }
 
