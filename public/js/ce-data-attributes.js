@@ -138,6 +138,16 @@
 
         if (type === 'select' && attr && attr.options && attr.options.length) {
             if (existingSelect) {
+                // Repopulate options — attribute may have changed (e.g. after duplicate)
+                var previousValue = existingSelect.value;
+                existingSelect.innerHTML = '';
+                for (var i = 0; i < attr.options.length; i++) {
+                    var opt = document.createElement('option');
+                    opt.value = attr.options[i].key;
+                    opt.textContent = attr.options[i].value || attr.options[i].key;
+                    existingSelect.appendChild(opt);
+                }
+                existingSelect.value = previousValue;
                 applySelectStyle(existingSelect);
                 return;
             }
@@ -235,10 +245,9 @@
         return null;
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    // Contao 5 uses Hotwire Turbo Drive. turbo:load fires on both the initial
+    // page load and every subsequent Turbo navigation (e.g. after save), so
+    // it is the only boot hook we need.
+    document.addEventListener('turbo:load', init);
 
 }());
