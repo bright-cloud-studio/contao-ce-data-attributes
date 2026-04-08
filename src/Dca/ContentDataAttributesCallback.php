@@ -103,19 +103,6 @@ class ContentDataAttributesCallback
 
                 return (string) (int) $rawValue;
 
-            case 'boolean':
-                $value = strtolower($rawValue);
-
-                if (\in_array($value, ['1', 'true', 'yes'], true)) {
-                    return 'true';
-                }
-
-                if (\in_array($value, ['0', 'false', 'no'], true)) {
-                    return 'false';
-                }
-
-                throw new \RuntimeException(sprintf('The value for "%s" must be true or false.', $label));
-
             case 'select':
                 $validKeys = array_column($allowedValues, 'key');
 
