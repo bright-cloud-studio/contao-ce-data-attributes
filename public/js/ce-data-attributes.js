@@ -51,7 +51,37 @@
 
             initAllRows(container);
 
+            // Rescans all rows after a duplicate operation. We defer by 100 ms so
+            // that Choices.js has finished (re-)initializing every select in the
+            // widget before we try to add our badge/wrap. Without the delay,
+            // Choices.js rebuilds .choices__inner after us, stripping bcs-attr-wrap.
+            var rescanTimer = null;
+            function scheduleRescan() {
+                if (rescanTimer) {
+                    clearTimeout(rescanTimer);
+                }
+                rescanTimer = setTimeout(function () {
+                    rescanTimer = null;
+                    var allSelects = container.querySelectorAll('select[name*="[attribute_id]"]');
+                    for (var s = 0; s < allSelects.length; s++) {
+                        var sel = allSelects[s];
+                        // If Choices.js rebuilt .choices__inner, bcs-attr-wrap is gone.
+                        // Clear our init flag so initRow will set it up again.
+                        var choicesEl = sel.closest ? sel.closest('.choices') : null;
+                        var inner = choicesEl ? choicesEl.querySelector('.choices__inner') : null;
+                        if (inner && !inner.classList.contains('bcs-attr-wrap')) {
+                            delete sel.dataset.bcsInit;
+                        }
+                        // Also covers the cloned row whose flag was copied from source.
+                        if (!sel.dataset.bcsInit) {
+                            initRow(sel);
+                        }
+                    }
+                }, 100);
+            }
+
             var observer = new MutationObserver(function (mutations) {
+                var needsRescan = false;
                 for (var i = 0; i < mutations.length; i++) {
                     var added = mutations[i].addedNodes;
                     for (var j = 0; j < added.length; j++) {
@@ -60,17 +90,19 @@
                             continue;
                         }
                         var selects = node.querySelectorAll('select[name*="[attribute_id]"]');
-                        for (var k = 0; k < selects.length; k++) {
-                            // Skip selects already wrapped by us — these are mutations
-                            // caused by our own initRow, not a genuinely new row.
-                            var alreadyWrapped = selects[k].closest
-                                ? selects[k].closest('.bcs-attr-wrap')
-                                : selects[k].parentElement.classList.contains('bcs-attr-wrap');
-                            if (!alreadyWrapped) {
-                                initRow(selects[k]);
+                        if (selects.length) {
+                            // A row was added (duplicate). Clear bcsInit on the new
+                            // selects so the rescan can initialize them properly,
+                            // then let scheduleRescan handle everything.
+                            for (var k = 0; k < selects.length; k++) {
+                                delete selects[k].dataset.bcsInit;
                             }
+                            needsRescan = true;
                         }
                     }
+                }
+                if (needsRescan) {
+                    scheduleRescan();
                 }
             });
 
